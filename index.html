@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FizzBuzz (1〜50)</title>
+  <style>
+    :root {
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+
+      --fizz-color: #0284c7;
+      --fizz-bg: #e0f2fe;
+      --fizz-border: #bae6fd;
+
+      --buzz-color: #d97706;
+      --buzz-bg: #fef3c7;
+      --buzz-border: #fde68a;
+
+      --fizzbuzz-color: #7c3aed;
+      --fizzbuzz-bg: #ede9fe;
+      --fizzbuzz-border: #ddd6fe;
+
+      --normal-color: #475569;
+      --normal-bg: #f1f5f9;
+      --normal-border: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 2rem 1rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #0284c7, #7c3aed, #d97706);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* 統計バー */
+    .stats-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .stat-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-chip.active {
+      box-shadow: 0 0 0 2px var(--text-main);
+    }
+
+    .stat-chip.all { color: var(--text-main); }
+    .stat-chip.fizz { color: var(--fizz-color); background-color: var(--fizz-bg); border-color: var(--fizz-border); }
+    .stat-chip.buzz { color: var(--buzz-color); background-color: var(--buzz-bg); border-color: var(--buzz-border); }
+    .stat-chip.fizzbuzz { color: var(--fizzbuzz-color); background-color: var(--fizzbuzz-bg); border-color: var(--fizzbuzz-border); }
+    .stat-chip.number { color: var(--normal-color); background-color: var(--normal-bg); border-color: var(--normal-border); }
+
+    .stat-count {
+      padding: 0.1rem 0.45rem;
+      border-radius: 9999px;
+      background-color: rgba(255, 255, 255, 0.7);
+      font-size: 0.75rem;
+    }
+
+    /* グリッドレイアウト */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.85rem;
+    }
+
+    /* カード */
+    .card {
+      background-color: var(--card-bg);
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1rem 0.75rem;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 105px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    .card .num-badge {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .card .val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0.35rem 0;
+      letter-spacing: -0.01em;
+    }
+
+    .card .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      display: inline-block;
+      margin: 0 auto;
+    }
+
+    /* タイプ別のカードスタイル */
+    .card.type-fizz {
+      border-color: var(--fizz-border);
+      background: linear-gradient(180deg, #ffffff 60%, var(--fizz-bg) 100%);
+    }
+    .card.type-fizz .val { color: var(--fizz-color); }
+    .card.type-fizz .tag { color: var(--fizz-color); background-color: var(--fizz-bg); }
+
+    .card.type-buzz {
+      border-color: var(--buzz-border);
+      background: linear-gradient(180deg, #ffffff 60%, var(--buzz-bg) 100%);
+    }
+    .card.type-buzz .val { color: var(--buzz-color); }
+    .card.type-buzz .tag { color: var(--buzz-color); background-color: var(--buzz-bg); }
+
+    .card.type-fizzbuzz {
+      border-color: var(--fizzbuzz-border);
+      background: linear-gradient(180deg, #ffffff 50%, var(--fizzbuzz-bg) 100%);
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.12);
+    }
+    .card.type-fizzbuzz .val {
+      background: linear-gradient(135deg, #7c3aed, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.25rem;
+    }
+    .card.type-fizzbuzz .tag { color: var(--fizzbuzz-color); background-color: var(--fizzbuzz-bg); font-weight: 700; }
+
+    .card.type-number {
+      border-color: var(--border-color);
+    }
+    .card.type-number .val { color: var(--normal-color); }
+    .card.type-number .tag { color: var(--text-muted); background-color: var(--normal-bg); }
+
+    footer {
+      margin-top: 2.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>FizzBuzz Viewer</h1>
+      <p class="subtitle">1 から 50 までの FizzBuzz 結果一覧</p>
+    </header>
+
+    <!-- フィルタ・統計 -->
+    <div class="stats-bar" id="stats-bar">
+      <!-- JavaScript で動的に生成 -->
+    </div>
+
+    <!-- カード一覧 -->
+    <main class="grid" id="fizzbuzz-grid" aria-label="FizzBuzz結果リスト">
+      <!-- JavaScript で動的に生成 -->
+    </main>
+
+    <footer>
+      <p>Rule: 3の倍数で Fizz / 5の倍数で Buzz / 15の倍数で FizzBuzz</p>
+    </footer>
+  </div>
+
+  <script>
+    /**
+     * FizzBuzz の判定ロジック
+     * @param {number} n
+     * @returns {{ value: string|number, type: 'fizzbuzz'|'fizz'|'buzz'|'number', label: string }}
+     */
+    function getFizzBuzz(n) {
+      if (n % 15 === 0) {
+        return { value: 'FizzBuzz', type: 'fizzbuzz', label: '15の倍数' };
+      }
+      if (n % 3 === 0) {
+        return { value: 'Fizz', type: 'fizz', label: '3の倍数' };
+      }
+      if (n % 5 === 0) {
+        return { value: 'Buzz', type: 'buzz', label: '5の倍数' };
+      }
+      return { value: n, type: 'number', label: '通常' };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const START = 1;
+      const END = 50;
+
+      // 1〜50のデータを生成
+      const items = [];
+      const counts = { all: 0, fizz: 0, buzz: 0, fizzbuzz: 0, number: 0 };
+
+      for (let i = START; i <= END; i++) {
+        const res = getFizzBuzz(i);
+        items.push({ num: i, ...res });
+        counts.all++;
+        counts[res.type]++;
+      }
+
+      // 統計・フィルタバーのレンダリング
+      const statsBar = document.getElementById('stats-bar');
+      const filterConfig = [
+        { key: 'all', name: 'すべて', class: 'all' },
+        { key: 'fizzbuzz', name: 'FizzBuzz', class: 'fizzbuzz' },
+        { key: 'fizz', name: 'Fizz', class: 'fizz' },
+        { key: 'buzz', name: 'Buzz', class: 'buzz' },
+        { key: 'number', name: '数値のみ', class: 'number' }
+      ];
+
+      let currentFilter = 'all';
+
+      filterConfig.forEach(cfg => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `stat-chip ${cfg.class} ${cfg.key === 'all' ? 'active' : ''}`;
+        btn.innerHTML = `${cfg.name} <span class="stat-count">${counts[cfg.key]}</span>`;
+        btn.addEventListener('click', () => {
+          currentFilter = cfg.key;
+          document.querySelectorAll('.stat-chip').forEach(el => el.classList.remove('active'));
+          btn.classList.add('active');
+          renderCards();
+        });
+        statsBar.appendChild(btn);
+      });
+
+      // グリッドカードの描画
+      const grid = document.getElementById('fizzbuzz-grid');
+
+      function renderCards() {
+        grid.innerHTML = '';
+        const filteredItems = currentFilter === 'all'
+          ? items
+          : items.filter(item => item.type === currentFilter);
+
+        filteredItems.forEach(item => {
+          const card = document.createElement('article');
+          card.className = `card type-${item.type}`;
+          card.innerHTML = `
+            <span class="num-badge">#${item.num}</span>
+            <div class="val">${item.value}</div>
+            <span class="tag">${item.label}</span>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      // 初回レンダリング
+      renderCards();
+    });
+  </script>
+</body>
+</html>
